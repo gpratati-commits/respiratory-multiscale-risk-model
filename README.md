@@ -10,11 +10,43 @@ A later extension will investigate whether airway microbiome characteristics
 can improve prediction of respiratory exacerbations in patients with chronic
 airway disease.
 
-## Primary public-data research question
+## Primary Research Question
 
-Can recent activity of influenza, RSV and SARS-CoV-2, together with seasonality
-and environmental predictors, improve short-term prediction of respiratory
-disease burden compared with models based only on recent outcome history?
+Can recent activity of co-circulating respiratory pathogens improve
+1-, 2-, and 4-week-ahead prediction of respiratory disease burden
+in Singapore beyond models based on recent respiratory disease
+activity and seasonality alone?
+
+## Secondary Research Question
+
+How can age-specific population contact structure be incorporated
+into transmission models to evaluate respiratory-virus transmission
+and targeted intervention strategies?
+
+
+## Predictor Groups
+
+### Core forecasting predictors
+
+1. Recent respiratory disease activity
+2. Seasonal and temporal indicators
+3. Lagged activity of co-circulating respiratory pathogens
+
+### Later transmission-modelling inputs
+
+4. Age-specific population contact structure
+5. Estimated transmission indicators
+
+### Future clinical extension
+
+6. Airway microbiome features
+7. Patient-level clinical characteristics, if suitable data become available
+
+## Pathogens of Interest
+
+- Influenza
+- Respiratory syncytial virus (RSV)
+- SARS-CoV-2
 
 ## Initial study setting
 
