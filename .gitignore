@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# macOS
+.DS_Store
+
+# Raw data
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/singapore_surveillance/
+!data/raw/singapore_surveillance/README.md
+!data/raw/singapore_surveillance/sample_bulletins/
+!data/raw/singapore_surveillance/sample_bulletins/.gitkeep
+
+# Do not track downloaded surveillance PDFs
+data/raw/singapore_surveillance/sample_bulletins/*.pdf
+
+# Model outputs
+outputs/models/*
+
+# Secrets
+.env
+*.key
