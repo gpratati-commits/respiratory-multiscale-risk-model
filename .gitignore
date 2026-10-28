@@ -30,3 +30,4 @@ outputs/models/*
 # Secrets
 .env
 *.key
+data/raw/singapore_surveillance/weekly_bulletins/*.pdf
