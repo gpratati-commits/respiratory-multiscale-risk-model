@@ -1,0 +1,4 @@
+year,epi_week,ari_attendance,filename,extraction_method,flag_nonpositive,flag_iqr,previous_ari,absolute_weekly_change,flag_large_weekly_change,needs_review,time_index
+2020,5,4728,2020_week_05.pdf,narrative_ari_attendance;table_acute_upper_respiratory_infections,False,True,3430.0,1298.0,True,True,57
+2020,6,3791,2020_week_06.pdf,narrative_ari_attendance;table_acute_upper_respiratory_infections,False,False,4728.0,937.0,True,True,58
+2022,5,2945,2022_week_05.pdf,narrative_ari_attendance;table_acute_upper_respiratory_infections,False,False,1911.0,1034.0,True,True,162

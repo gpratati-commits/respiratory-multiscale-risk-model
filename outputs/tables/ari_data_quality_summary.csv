@@ -1,0 +1,15 @@
+metric,value
+expected_bulletins,407.0
+extracted_rows,407.0
+duplicate_rows,0.0
+missing_ari_values,0.0
+nonpositive_values,0.0
+iqr_flagged_values,1.0
+large_weekly_change_flags,3.0
+total_review_flags,3.0
+minimum_ari,268.0
+maximum_ari,4728.0
+median_ari,2457.0
+mean_ari,2247.7027027027025
+iqr_lower_bound,139.0
+iqr_upper_bound,4371.0
