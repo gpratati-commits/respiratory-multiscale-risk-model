@@ -142,3 +142,34 @@ Forecast horizons will be 1, 2 and 4 weeks ahead.
 All feature selection and hyperparameter decisions will use training and
 validation data only. The 2026 test period will remain untouched until the
 final model evaluation.
+## Baseline Forecasting Results
+
+Three simple forecasting benchmarks were evaluated at 1-, 2-, and
+4-week horizons: persistence, a recent four-week mean, and a
+seasonal-naive forecast based on the corresponding target
+epidemiological week in the previous year.
+
+Model-development decisions were based on the 2025 validation period.
+
+At the 1-week horizon, persistence was the strongest baseline
+(MAE = 116.19; RMSE = 149.37; MASE = 0.802), consistent with the
+strong short-lag autocorrelation observed in recent ARI activity.
+
+At the 2-week horizon, persistence remained the strongest baseline
+(MAE = 196.40; RMSE = 249.87; MASE = 1.356), although performance
+declined relative to the 1-week horizon.
+
+At the 4-week horizon, the seasonal-naive forecast performed best
+(MAE = 238.56; RMSE = 303.17; MASE = 1.647), outperforming both
+persistence and the recent four-week mean. This suggests that annual
+seasonal information becomes relatively more useful as the forecast
+horizon increases.
+
+The recent four-week mean did not outperform persistence at any
+validation horizon.
+
+These benchmarks will be used as reference models when evaluating
+statistical and machine-learning approaches.
+
+The 2026 period is retained as the final held-out test set and will
+not be used for subsequent feature selection or hyperparameter tuning.
