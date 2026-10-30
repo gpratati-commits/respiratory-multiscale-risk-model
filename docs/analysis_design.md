@@ -201,3 +201,24 @@ value did not improve validation performance. Therefore, the simpler
 recent-history plus first-harmonic seasonality specification was retained.
 
 The 2026 held-out test period was not used for feature selection.
+## XGBoost Validation Results
+
+XGBoost models were trained using 2023-2024 data and selected using
+the 2025 validation period. Hyperparameter selection was performed
+separately for the 1-, 2-, and 4-week forecast horizons.
+
+The selected XGBoost models achieved:
+
+- 1-week horizon: MAE = 105.39, RMSE = 140.28, MASE = 0.728
+- 2-week horizon: MAE = 138.51, RMSE = 185.94, MASE = 0.956
+- 4-week horizon: MAE = 184.93, RMSE = 240.26, MASE = 1.277
+
+The full recent-history plus seasonality feature set was selected at
+all three horizons.
+
+Compared with the Negative Binomial model, Negative Binomial provided
+lower validation error at the 1-week horizon, whereas XGBoost provided
+lower validation error at the 2- and 4-week horizons.
+
+The 2026 held-out test period was not used for XGBoost model or
+hyperparameter selection.
