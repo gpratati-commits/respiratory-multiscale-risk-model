@@ -257,3 +257,26 @@ first-harmonic seasonality.
 
 These model choices are now frozen. No subsequent model or
 hyperparameter decisions will be made using the 2026 test data.
+## Final Held-Out ARI Forecast Evaluation
+
+After validation-based model selection was completed, the frozen models
+were refitted using all available development data from 2023-2025 and
+evaluated once on the previously untouched 2026 E-week 1-41 test period.
+
+The frozen model strategy was:
+
+- 1-week: equal-weight Negative Binomial-XGBoost ensemble
+- 2-week: XGBoost
+- 4-week: equal-weight Negative Binomial-XGBoost ensemble
+
+Held-out test performance was:
+
+- 1-week: MAE = 120.94, RMSE = 152.19, MASE = 0.895
+- 2-week: MAE = 155.62, RMSE = 187.23, MASE = 1.152
+- 4-week: MAE = 218.42, RMSE = 259.80, MASE = 1.617
+
+Although individual component models occasionally achieved lower test
+error than the frozen validation-selected model, no model specification
+was changed after observing the test data.
+
+This preserves the independence of the held-out 2026 evaluation.
