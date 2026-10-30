@@ -173,3 +173,31 @@ statistical and machine-learning approaches.
 
 The 2026 period is retained as the final held-out test set and will
 not be used for subsequent feature selection or hyperparameter tuning.
+## Negative Binomial Forecasting Results
+
+Negative Binomial regression models were evaluated using the 2025
+validation period at 1-, 2-, and 4-week forecast horizons.
+
+Across all three horizons, the strongest validation performance was
+obtained using recent ARI activity combined with first-harmonic annual
+seasonality. The selected predictor set consisted of:
+
+- current ARI attendance
+- ARI lag 1
+- ARI lag 2
+- first-harmonic sine seasonal term
+- first-harmonic cosine seasonal term
+
+Validation performance was:
+
+- 1-week horizon: MAE = 98.52, RMSE = 132.99, MASE = 0.680
+- 2-week horizon: MAE = 152.68, RMSE = 205.31, MASE = 1.054
+- 4-week horizon: MAE = 192.44, RMSE = 245.23, MASE = 1.329
+
+All selected models converged successfully.
+
+Adding a second seasonal harmonic or the previous-year same-week ARI
+value did not improve validation performance. Therefore, the simpler
+recent-history plus first-harmonic seasonality specification was retained.
+
+The 2026 held-out test period was not used for feature selection.
