@@ -222,3 +222,38 @@ lower validation error at the 2- and 4-week horizons.
 
 The 2026 held-out test period was not used for XGBoost model or
 hyperparameter selection.
+## Final Validation-Based Model Selection
+
+Final model selection was completed using only the 2025 validation
+period. The 2026 held-out test period was not accessed during this
+selection stage.
+
+The validation comparison included:
+
+- the best simple baseline
+- the best Negative Binomial model
+- the best XGBoost model
+- a pre-specified equal-weight Negative Binomial-XGBoost ensemble
+
+The selected forecasting strategy was:
+
+- 1-week horizon:
+  50:50 Negative Binomial-XGBoost ensemble
+  MAE = 94.79, RMSE = 127.02, MASE = 0.654
+
+- 2-week horizon:
+  XGBoost
+  MAE = 138.51, RMSE = 185.94, MASE = 0.956
+
+- 4-week horizon:
+  50:50 Negative Binomial-XGBoost ensemble
+  MAE = 184.71, RMSE = 239.81, MASE = 1.275
+
+The Negative Binomial component uses recent ARI activity plus
+first-harmonic seasonal terms.
+
+The selected XGBoost models use full recent ARI history plus
+first-harmonic seasonality.
+
+These model choices are now frozen. No subsequent model or
+hyperparameter decisions will be made using the 2026 test data.
