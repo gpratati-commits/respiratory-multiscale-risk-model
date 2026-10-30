@@ -280,3 +280,32 @@ error than the frozen validation-selected model, no model specification
 was changed after observing the test data.
 
 This preserves the independence of the held-out 2026 evaluation.
+## Final ARI-Only Model Comparison
+
+All ARI-only forecasting models were compared on the independent
+2026 E-week 1-41 test period using a common error-scaling procedure.
+
+The validation-selected frozen forecasting strategy achieved:
+
+- 1-week: MAE = 120.94, RMSE = 152.19, MASE = 0.895
+- 2-week: MAE = 155.62, RMSE = 187.23, MASE = 1.152
+- 4-week: MAE = 218.42, RMSE = 259.80, MASE = 1.617
+
+In descriptive post-test comparisons, XGBoost produced the lowest
+observed MAE at the 1- and 4-week horizons, while persistence produced
+the lowest observed MAE at the 2-week horizon.
+
+These post-test comparisons were not used to modify the frozen
+forecasting strategy.
+
+The results indicate that improvements observed during the 2025
+validation period did not consistently translate into large gains over
+strong autoregressive baselines in the independent 2026 test period.
+This suggests meaningful temporal heterogeneity in ARI dynamics and
+demonstrates the difficulty of consistently improving upon recent
+disease activity alone.
+
+The ARI-only forecasting analysis is therefore considered complete.
+The next analysis will test whether information on co-circulating
+respiratory pathogens provides incremental predictive value beyond
+ARI history and seasonality.
