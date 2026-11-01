@@ -1,0 +1,4 @@
+horizon_weeks,feature_set,MAE,RMSE,MASE,converged,model_family,configuration
+1,ari_only,134.14295792055313,170.7470092511735,0.8900702638346462,True,negative_binomial,fixed_validation_specification
+2,ari_only,227.30260539504718,294.3005690907039,1.5074738124425069,True,xgboost,C
+4,ari_plus_covid,235.52527085790095,312.7097068313736,1.5606559030720435,True,xgboost,A
