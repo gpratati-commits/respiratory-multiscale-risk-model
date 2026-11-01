@@ -1,0 +1,10 @@
+split,horizon_weeks,n
+test,1,41
+test,2,41
+test,4,41
+train,1,39
+train,2,38
+train,4,36
+validation,1,53
+validation,2,53
+validation,4,53
