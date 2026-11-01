@@ -1,35 +1,18 @@
 """
 18_audit_respiratory_pathogen_signals.py
 
-Audit downloaded Singapore weekly infectious-disease bulletins for
-potential respiratory-pathogen surveillance signals.
+Audit Singapore Weekly Infectious Disease Bulletin PDFs for
+respiratory-pathogen surveillance information.
 
-Pathogens audited:
-    - Seasonal/human influenza
-    - COVID-19 / SARS-CoV-2
-    - RSV / respiratory syncytial virus
+This script DOES NOT create the final modelling variables.
+Its purpose is to identify whether influenza, COVID-19 and RSV
+signals are present and to preserve representative text snippets.
 
-IMPORTANT
----------
-This script does NOT yet extract numerical pathogen values.
+Outputs
+-------
+data/interim/respiratory_pathogen_signal_audit.csv
 
-Its purpose is to determine:
-    1. Which pathogen signals appear in the bulletins.
-    2. In which years/weeks they appear.
-    3. What terminology is used.
-    4. Whether reporting is consistent enough for later extraction.
-
-Influenza false positives such as:
-    - Avian Influenza
-    - Haemophilus influenzae
-    - Haemophilus influenzae type b
-
-are explicitly excluded from the seasonal-influenza audit.
-
-Outputs:
-    data/interim/respiratory_pathogen_signal_audit.csv
-
-    outputs/tables/respiratory_pathogen_signal_summary.csv
+outputs/tables/respiratory_pathogen_signal_summary.csv
 """
 
 from pathlib import Path
@@ -41,7 +24,7 @@ from pypdf import PdfReader
 
 
 # ============================================================
-# PATHS
+# PROJECT PATHS
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -70,41 +53,36 @@ SUMMARY_FILE = (
 
 
 # ============================================================
-# REDUCE NON-FATAL PYPDF WARNING OUTPUT
+# SUPPRESS NON-FATAL PYPDF WARNINGS
 # ============================================================
 
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 
 # ============================================================
-# PATHOGEN SEARCH TERMS
+# SEARCH TERMS
 # ============================================================
 
 KEYWORD_GROUPS = {
 
-    # IMPORTANT:
-    # Do NOT use generic r"\binfluenza\b".
-    #
-    # That would incorrectly match terms such as:
-    # "Avian Influenza".
     "influenza": [
         r"influenza[- ]like illness",
         r"\bILI\b",
+        r"positivity rate for influenza among ILI samples",
+        r"overall positivity rate for influenza among ILI samples",
         r"seasonal influenza",
-        r"influenza positivity",
-        r"influenza positive",
-        r"positive for influenza",
-        r"percentage positive for influenza",
-        r"percent positive for influenza",
-        r"proportion positive for influenza",
-        r"influenza A\b",
+        r"positive for influenza A\b",
+        r"positive for influenza B\b",
+        r"influenza A\(H3N2\)",
+        r"influenza A\(pH1N1\)",
         r"influenza B\b",
     ],
 
     "covid": [
-        r"covid[- ]?19",
-        r"\bcovid\b",
-        r"sars[- ]?cov[- ]?2",
+        r"COVID[- ]?19",
+        r"\bCOVID\b",
+        r"SARS[- ]?CoV[- ]?2",
+        r"positivity rate for COVID[- ]?19 among ARI samples",
     ],
 
     "rsv": [
@@ -115,10 +93,7 @@ KEYWORD_GROUPS = {
 }
 
 
-# ============================================================
-# INFLUENZA FALSE-POSITIVE TERMS
-# ============================================================
-
+# Terms that must not be mistaken for seasonal/human influenza.
 INFLUENZA_EXCLUSIONS = [
     r"avian influenza",
     r"haemophilus influenzae",
@@ -127,26 +102,18 @@ INFLUENZA_EXCLUSIONS = [
 
 
 # ============================================================
-# HELPER FUNCTION:
-# EXTRACT YEAR AND WEEK FROM FILENAME
+# HELPER FUNCTIONS
 # ============================================================
 
 def parse_year_week(filename):
     """
     Parse filenames such as:
-
-        2024_week_40.pdf
-        2019_week_01.pdf
-
-    Returns:
-        year, epi_week
-
-    If filename does not match the expected pattern:
-        None, None
+        2024_week_09.pdf
+        2026_week_41.pdf
     """
 
-    match = re.match(
-        r"(\d{4})_week_(\d+)\.pdf$",
+    match = re.fullmatch(
+        r"(\d{4})_week_(\d+)\.pdf",
         filename,
         flags=re.IGNORECASE,
     )
@@ -154,69 +121,23 @@ def parse_year_week(filename):
     if match is None:
         return None, None
 
-    year = int(
-        match.group(1)
-    )
-
-    epi_week = int(
-        match.group(2)
-    )
-
-    return year, epi_week
+    return int(match.group(1)), int(match.group(2))
 
 
-# ============================================================
-# HELPER FUNCTION:
-# EXTRACT TEXT FROM PDF
-# ============================================================
-
-def extract_pdf_text(pdf_path):
+def normalize_text(text):
     """
-    Extract text from every readable page of a PDF.
-
-    Pages that produce no text are skipped.
+    Normalize PDF text before searching.
     """
 
-    reader = PdfReader(
-        str(pdf_path)
-    )
+    if not text:
+        return ""
 
-    page_texts = []
-
-    for page in reader.pages:
-
-        try:
-            text = page.extract_text()
-
-        except Exception:
-            text = ""
-
-        if text:
-            page_texts.append(
-                text
-            )
-
-    combined_text = "\n".join(
-        page_texts
-    )
-
-    return combined_text
-
-
-# ============================================================
-# HELPER FUNCTION:
-# CLEAN SNIPPET TEXT
-# ============================================================
-
-def clean_snippet(text):
-    """
-    Replace repeated whitespace/newlines so snippets are easy
-    to inspect in the CSV and Terminal.
-    """
-
-    text = text.replace(
-        "\n",
-        " ",
+    # Normalize common Unicode dashes.
+    text = (
+        text
+        .replace("\u2013", "-")
+        .replace("\u2014", "-")
+        .replace("\u2011", "-")
     )
 
     text = re.sub(
@@ -228,34 +149,75 @@ def clean_snippet(text):
     return text.strip()
 
 
-# ============================================================
-# HELPER FUNCTION:
-# CHECK WHETHER INFLUENZA CONTEXT IS A FALSE POSITIVE
-# ============================================================
-
-def influenza_context_is_excluded(context):
+def extract_pdf_text(pdf_path):
     """
-    Return True when the local context appears to refer to
+    Extract text from all readable pages of a PDF.
+    """
+
+    reader = PdfReader(str(pdf_path))
+
+    page_text = []
+
+    for page in reader.pages:
+
+        try:
+            text = page.extract_text() or ""
+
+        except Exception:
+            text = ""
+
+        if text:
+            page_text.append(text)
+
+    return normalize_text(
+        " ".join(page_text)
+    )
+
+
+def clean_snippet(text):
+    """
+    Make snippets easier to read in CSV output.
+    """
+
+    return normalize_text(text)
+
+
+def influenza_context_is_false_positive(context):
+    """
+    Return True if an influenza match appears to be only
     Avian Influenza or Haemophilus influenzae rather than
-    seasonal/human influenza surveillance.
+    human influenza surveillance.
     """
 
-    for exclusion_pattern in INFLUENZA_EXCLUSIONS:
+    lower_context = context.lower()
 
-        if re.search(
-            exclusion_pattern,
-            context,
+    exclusion_found = any(
+        re.search(
+            pattern,
+            lower_context,
             flags=re.IGNORECASE,
-        ):
-            return True
+        )
+        for pattern in INFLUENZA_EXCLUSIONS
+    )
 
-    return False
+    # Human-influenza indicators that override nearby exclusions.
+    human_indicator_found = any(
+        phrase in lower_context
+        for phrase in [
+            "influenza-like illness",
+            "positivity rate for influenza",
+            "positive for influenza a",
+            "positive for influenza b",
+            "influenza a(h3n2)",
+            "influenza a(ph1n1)",
+        ]
+    )
 
+    return (
+        exclusion_found
+        and not human_indicator_found
+    )
 
-# ============================================================
-# HELPER FUNCTION:
-# FIND VALID PATHOGEN MATCHES
-# ============================================================
 
 def find_keyword_information(
     text,
@@ -263,60 +225,44 @@ def find_keyword_information(
     patterns,
 ):
     """
-    Search PDF text for pathogen-specific terms.
+    Search text for one pathogen.
 
-    For influenza, false-positive local contexts such as
-    "Avian Influenza" and "Haemophilus influenzae" are rejected.
-
-    Returns:
-        available
-        mention_count
-        representative_snippet
+    Returns
+    -------
+    available : bool
+    mention_count : int
+    snippet : str
     """
 
     accepted_matches = []
 
-    # --------------------------------------------------------
-    # Search every pattern.
-    # --------------------------------------------------------
-
     for pattern in patterns:
 
-        matches = re.finditer(
+        for match in re.finditer(
             pattern,
             text,
             flags=re.IGNORECASE,
-        )
+        ):
 
-        for match in matches:
-
-            # Small local context is used for deciding
-            # whether this match is valid.
             context_start = max(
                 0,
-                match.start() - 100,
+                match.start() - 150,
             )
 
             context_end = min(
                 len(text),
-                match.end() + 150,
+                match.end() + 350,
             )
 
-            local_context = (
-                text[
-                    context_start:
-                    context_end
-                ]
-            )
-
-            # -----------------------------------------------
-            # Influenza-specific false-positive filtering.
-            # -----------------------------------------------
+            context = text[
+                context_start:
+                context_end
+            ]
 
             if pathogen == "influenza":
 
-                if influenza_context_is_excluded(
-                    local_context
+                if influenza_context_is_false_positive(
+                    context
                 ):
                     continue
 
@@ -324,49 +270,31 @@ def find_keyword_information(
                 match
             )
 
-    # --------------------------------------------------------
-    # No acceptable matches.
-    # --------------------------------------------------------
+    if not accepted_matches:
 
-    if len(accepted_matches) == 0:
+        return False, 0, ""
 
-        return (
-            False,
-            0,
-            "",
-        )
-
-    # Sort by location in PDF text.
-    accepted_matches = sorted(
-        accepted_matches,
-        key=lambda match:
-        match.start(),
+    accepted_matches.sort(
+        key=lambda x: x.start()
     )
-
-    # --------------------------------------------------------
-    # Build a larger representative snippet around the first
-    # acceptable match.
-    # --------------------------------------------------------
 
     first_match = accepted_matches[0]
 
     snippet_start = max(
         0,
-        first_match.start() - 200,
+        first_match.start() - 250,
     )
 
     snippet_end = min(
         len(text),
-        first_match.end() + 400,
+        first_match.end() + 700,
     )
 
-    snippet = text[
-        snippet_start:
-        snippet_end
-    ]
-
     snippet = clean_snippet(
-        snippet
+        text[
+            snippet_start:
+            snippet_end
+        ]
     )
 
     return (
@@ -382,62 +310,41 @@ def find_keyword_information(
 
 def main():
 
-    print("=" * 70)
+    print("=" * 72)
     print("RESPIRATORY PATHOGEN SIGNAL AUDIT")
-    print("=" * 70)
-
-    # --------------------------------------------------------
-    # Check PDF directory.
-    # --------------------------------------------------------
+    print("=" * 72)
 
     if not PDF_DIR.exists():
 
         raise FileNotFoundError(
-            "Weekly bulletin directory "
-            "was not found:\n"
-            f"{PDF_DIR}"
+            f"PDF directory not found:\n{PDF_DIR}"
         )
-
-    # --------------------------------------------------------
-    # Find PDFs.
-    # --------------------------------------------------------
 
     pdf_files = sorted(
-        PDF_DIR.glob(
-            "*.pdf"
-        )
+        PDF_DIR.glob("*.pdf")
     )
 
-    if len(pdf_files) == 0:
+    if not pdf_files:
 
         raise RuntimeError(
-            "No PDF files were found in:\n"
-            f"{PDF_DIR}"
+            f"No PDF files found in:\n{PDF_DIR}"
         )
 
     print(
-        f"\nPDF files found: "
-        f"{len(pdf_files)}"
+        f"\nPDF files found: {len(pdf_files)}"
     )
 
     records = []
 
-    # --------------------------------------------------------
-    # Process each bulletin.
-    # --------------------------------------------------------
-
-    for number, pdf_path in enumerate(
+    for index, pdf_path in enumerate(
         pdf_files,
         start=1,
     ):
 
-        year, epi_week = (
-            parse_year_week(
-                pdf_path.name
-            )
+        year, epi_week = parse_year_week(
+            pdf_path.name
         )
 
-        # Skip unexpected filenames.
         if (
             year is None
             or epi_week is None
@@ -451,13 +358,9 @@ def main():
             continue
 
         print(
-            f"[{number}/{len(pdf_files)}] "
-            f"{year} week {epi_week}"
+            f"[{index}/{len(pdf_files)}] "
+            f"{year} Week {epi_week:02d}"
         )
-
-        # ----------------------------------------------------
-        # Extract PDF text.
-        # ----------------------------------------------------
 
         try:
 
@@ -465,9 +368,7 @@ def main():
                 pdf_path
             )
 
-            extraction_status = (
-                "success"
-            )
+            extraction_status = "success"
 
         except Exception as exc:
 
@@ -480,7 +381,6 @@ def main():
             )
 
         record = {
-
             "year":
                 year,
 
@@ -497,14 +397,9 @@ def main():
                 len(text),
         }
 
-        # ----------------------------------------------------
-        # Search for each pathogen.
-        # ----------------------------------------------------
-
-        for (
-            pathogen,
-            patterns,
-        ) in KEYWORD_GROUPS.items():
+        for pathogen, patterns in (
+            KEYWORD_GROUPS.items()
+        ):
 
             (
                 available,
@@ -528,22 +423,14 @@ def main():
                 f"{pathogen}_snippet"
             ] = snippet
 
-        records.append(
-            record
-        )
+        records.append(record)
 
-    # --------------------------------------------------------
-    # Convert results to DataFrame.
-    # --------------------------------------------------------
-
-    audit = pd.DataFrame(
-        records
-    )
+    audit = pd.DataFrame(records)
 
     if audit.empty:
 
         raise RuntimeError(
-            "The audit produced no usable records."
+            "Audit produced no records."
         )
 
     audit = (
@@ -559,10 +446,6 @@ def main():
         )
     )
 
-    # --------------------------------------------------------
-    # Save detailed audit.
-    # --------------------------------------------------------
-
     OUTPUT_FILE.parent.mkdir(
         parents=True,
         exist_ok=True,
@@ -573,71 +456,36 @@ def main():
         index=False,
     )
 
-    # --------------------------------------------------------
-    # Build yearly summary.
-    # --------------------------------------------------------
+    # ========================================================
+    # YEARLY SUMMARY
+    # ========================================================
 
-    summary_records = []
+    summary = (
+        audit
+        .groupby("year")
+        .agg(
+            bulletins=(
+                "epi_week",
+                "size",
+            ),
 
-    for year in sorted(
-        audit["year"].unique()
-    ):
+            influenza_available=(
+                "influenza_available",
+                "sum",
+            ),
 
-        year_data = audit[
-            audit["year"]
-            == year
-        ]
+            covid_available=(
+                "covid_available",
+                "sum",
+            ),
 
-        successful_extractions = int(
-            (
-                year_data[
-                    "text_extraction_status"
-                ]
-                == "success"
-            ).sum()
+            rsv_available=(
+                "rsv_available",
+                "sum",
+            ),
         )
-
-        summary_records.append(
-            {
-                "year":
-                    int(year),
-
-                "bulletins":
-                    len(year_data),
-
-                "successful_text_extractions":
-                    successful_extractions,
-
-                "influenza_available":
-                    int(
-                        year_data[
-                            "influenza_available"
-                        ].sum()
-                    ),
-
-                "covid_available":
-                    int(
-                        year_data[
-                            "covid_available"
-                        ].sum()
-                    ),
-
-                "rsv_available":
-                    int(
-                        year_data[
-                            "rsv_available"
-                        ].sum()
-                    ),
-            }
-        )
-
-    summary = pd.DataFrame(
-        summary_records
+        .reset_index()
     )
-
-    # --------------------------------------------------------
-    # Save summary.
-    # --------------------------------------------------------
 
     SUMMARY_FILE.parent.mkdir(
         parents=True,
@@ -649,12 +497,12 @@ def main():
         index=False,
     )
 
-    # --------------------------------------------------------
-    # Print summary.
-    # --------------------------------------------------------
+    # ========================================================
+    # REPORT RESULTS
+    # ========================================================
 
     print(
-        "\n" + "=" * 70
+        "\n" + "=" * 72
     )
 
     print(
@@ -662,7 +510,7 @@ def main():
     )
 
     print(
-        "=" * 70
+        "=" * 72
     )
 
     print(
@@ -670,10 +518,6 @@ def main():
             index=False
         )
     )
-
-    # --------------------------------------------------------
-    # Extraction-quality summary.
-    # --------------------------------------------------------
 
     failed = audit[
         audit[
@@ -683,7 +527,7 @@ def main():
     ]
 
     print(
-        "\n" + "=" * 70
+        "\n" + "=" * 72
     )
 
     print(
@@ -691,7 +535,7 @@ def main():
     )
 
     print(
-        "=" * 70
+        "=" * 72
     )
 
     print(
@@ -704,30 +548,9 @@ def main():
         f"{len(failed)}"
     )
 
-    if not failed.empty:
-
-        print(
-            "\nFailed files:"
-        )
-
-        print(
-            failed[
-                [
-                    "year",
-                    "epi_week",
-                    "filename",
-                    "text_extraction_status",
-                ]
-            ]
-            .to_string(
-                index=False
-            )
-        )
-
-    # --------------------------------------------------------
-    # Display a few influenza examples to make false-positive
-    # checking easier.
-    # --------------------------------------------------------
+    # ========================================================
+    # SAMPLE INFLUENZA MATCHES
+    # ========================================================
 
     influenza_examples = audit[
         audit[
@@ -737,7 +560,7 @@ def main():
     ]
 
     print(
-        "\n" + "=" * 70
+        "\n" + "=" * 72
     )
 
     print(
@@ -745,42 +568,29 @@ def main():
     )
 
     print(
-        "=" * 70
+        "=" * 72
     )
 
-    if influenza_examples.empty:
+    for _, row in (
+        influenza_examples
+        .head(5)
+        .iterrows()
+    ):
 
         print(
-            "No acceptable influenza matches "
-            "were identified."
+            f"\n{int(row['year'])} "
+            f"WEEK "
+            f"{int(row['epi_week']):02d}"
         )
 
-    else:
-
-        for _, row in (
-            influenza_examples
-            .head(5)
-            .iterrows()
-        ):
-
-            print(
-                f"\n{int(row['year'])} "
-                f"WEEK "
-                f"{int(row['epi_week'])}"
-            )
-
-            print(
-                row[
-                    "influenza_snippet"
-                ]
-            )
-
-    # --------------------------------------------------------
-    # Output locations.
-    # --------------------------------------------------------
+        print(
+            row[
+                "influenza_snippet"
+            ]
+        )
 
     print(
-        "\n" + "=" * 70
+        "\n" + "=" * 72
     )
 
     print(
@@ -788,7 +598,7 @@ def main():
     )
 
     print(
-        "=" * 70
+        "=" * 72
     )
 
     print(
@@ -801,10 +611,6 @@ def main():
         f"{SUMMARY_FILE}"
     )
 
-
-# ============================================================
-# RUN
-# ============================================================
 
 if __name__ == "__main__":
     main()
