@@ -1,0 +1,11 @@
+feature,missing_count
+influenza_lag1,1
+influenza_lag2,2
+influenza_lag4,4
+influenza_recent_2week_mean,2
+influenza_recent_4week_mean,4
+covid_lag1,1
+covid_lag2,2
+covid_lag4,4
+covid_recent_2week_mean,2
+covid_recent_4week_mean,4
