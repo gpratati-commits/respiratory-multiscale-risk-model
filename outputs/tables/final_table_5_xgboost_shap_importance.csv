@@ -1,0 +1,11 @@
+horizon_weeks,feature_set,configuration,feature,mean_abs_shap,mean_shap,median_abs_shap,shap_rank
+2,ari_only,C,ari_current,86.66083526611328,3.181978702545166,94.5169906616211,1
+2,ari_only,C,season_cos,53.552433013916016,-1.0161173343658447,23.96371841430664,2
+2,ari_only,C,season_sin,35.58437728881836,-0.8893700838088989,39.55373001098633,3
+2,ari_only,C,ari_recent_4week_mean,23.927892684936523,-0.824978768825531,20.905229568481445,4
+4,ari_plus_covid,A,season_cos,79.2977066040039,-0.8490447998046875,19.823143005371094,1
+4,ari_plus_covid,A,season_sin,21.659704208374023,-0.08694465458393097,13.086310386657715,2
+4,ari_plus_covid,A,ari_recent_4week_mean,9.238153457641602,-0.10039228945970535,6.255851745605469,3
+4,ari_plus_covid,A,ari_current,0.0,0.0,0.0,4
+4,ari_plus_covid,A,covid_lag1,0.0,0.0,0.0,5
+4,ari_plus_covid,A,covid_recent_4week_mean,0.0,0.0,0.0,6

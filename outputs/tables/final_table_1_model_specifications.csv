@@ -1,0 +1,4 @@
+horizon_weeks,model_family,feature_set,configuration
+1,negative_binomial,ari_only,fixed_validation_specification
+2,xgboost,ari_only,C
+4,xgboost,ari_plus_covid,A

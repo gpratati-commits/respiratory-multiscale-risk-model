@@ -1,0 +1,12 @@
+figure,file,description
+Figure 1,figure_1_weekly_ari_surveillance.png,Complete weekly ARI surveillance series.
+Figure 2 — 1-week,figure_2_1week_observed_vs_predicted.png,Observed versus predicted 1-week-ahead ARI.
+Figure 2 — 2-week,figure_2_2week_observed_vs_predicted.png,Observed versus predicted 2-week-ahead ARI.
+Figure 2 — 4-week,figure_2_4week_observed_vs_predicted.png,Observed versus predicted 4-week-ahead ARI.
+Figure 3A,figure_3a_mae_by_horizon.png,Held-out MAE by forecast horizon.
+Figure 3B,figure_3b_rmse_by_horizon.png,Held-out RMSE by forecast horizon.
+Figure 3C,figure_3c_mase_by_horizon.png,Held-out MASE by horizon; reference line at MASE = 1.
+Figure 4,figure_4_negative_binomial_irr.png,Negative Binomial incidence rate ratios with 95% confidence intervals.
+Figure 5 — 2-week,figure_5_2week_xgboost_shap_importance.png,Development-data mean absolute SHAP importance for the frozen 2-week XGBoost model.
+Figure 5 — 4-week,figure_5_4week_xgboost_shap_importance.png,Development-data mean absolute SHAP importance for the frozen 4-week XGBoost model.
+Figure 6,figure_6_covid_censoring_sensitivity.png,Sensitivity of held-out MAE to representation of COVID-19 positivity reported as <1%.
