@@ -1,0 +1,124 @@
+================================================================================
+FINAL PROJECT SUMMARY
+MULTI-PATHOGEN ARI FORECASTING
+================================================================================
+
+This summary contains only frozen final results. No model fitting or model selection is performed here.
+
+================================================================================
+FINAL MODEL SPECIFICATIONS
+================================================================================
+ horizon_weeks      model_family    feature_set                  configuration
+             1 negative_binomial       ari_only fixed_validation_specification
+             2           xgboost       ari_only                              C
+             4           xgboost ari_plus_covid                              A
+
+================================================================================
+FINAL 2026 HELD-OUT PERFORMANCE
+================================================================================
+ horizon_weeks      model_family    feature_set                  configuration  n_test     MAE    RMSE  MASE
+             1 negative_binomial       ari_only fixed_validation_specification      41 128.151 166.285 0.981
+             2           xgboost       ari_only                              C      41 154.678 185.123 1.186
+             4           xgboost ari_plus_covid                              A      41 176.038 214.729 1.354
+
+Key held-out interpretation:
+- 1-week: negative_binomial / ari_only | MAE=128.151, RMSE=166.285, MASE=0.981
+- 2-week: xgboost / ari_only | MAE=154.678, RMSE=185.123, MASE=1.186
+- 4-week: xgboost / ari_plus_covid | MAE=176.038, RMSE=214.729, MASE=1.354
+
+Forecast accuracy decreased as forecast horizon increased.
+The 1-week model achieved MASE below 1, while the 2- and 4-week models had MASE above 1.
+
+================================================================================
+COVID-19 CENSORING SENSITIVITY ANALYSIS
+================================================================================
+                scenario  covid_censored_value  horizon_weeks      model_family    feature_set     MAE    RMSE  MASE  delta_MAE_vs_primary  percent_change_MAE_vs_primary  delta_RMSE_vs_primary  delta_MASE_vs_primary
+          covid_lt1_as_0                   0.0              1 negative_binomial       ari_only 128.151 166.285 0.981                   0.0                            0.0                    0.0                    0.0
+primary_covid_lt1_as_0_5                   0.5              1 negative_binomial       ari_only 128.151 166.285 0.981                   0.0                            0.0                    0.0                    0.0
+          covid_lt1_as_1                   1.0              1 negative_binomial       ari_only 128.151 166.285 0.981                   0.0                            0.0                    0.0                    0.0
+          covid_lt1_as_0                   0.0              2           xgboost       ari_only 154.678 185.123 1.186                   0.0                            0.0                    0.0                    0.0
+primary_covid_lt1_as_0_5                   0.5              2           xgboost       ari_only 154.678 185.123 1.186                   0.0                            0.0                    0.0                    0.0
+          covid_lt1_as_1                   1.0              2           xgboost       ari_only 154.678 185.123 1.186                   0.0                            0.0                    0.0                    0.0
+          covid_lt1_as_0                   0.0              4           xgboost ari_plus_covid 176.038 214.729 1.354                   0.0                            0.0                    0.0                    0.0
+primary_covid_lt1_as_0_5                   0.5              4           xgboost ari_plus_covid 176.038 214.729 1.354                   0.0                            0.0                    0.0                    0.0
+          covid_lt1_as_1                   1.0              4           xgboost ari_plus_covid 176.038 214.729 1.354                   0.0                            0.0                    0.0                    0.0
+
+Interpretation: alternative representations of source-reported COVID-19 positivity <1% did not materially alter the frozen-model results.
+
+================================================================================
+NEGATIVE BINOMIAL MODEL INTERPRETATION
+================================================================================
+ horizon_weeks feature_set             parameter  beta_standardized  IRR_per_1SD  IRR_95CI_lower  IRR_95CI_upper  percent_change_per_1SD  p_value  dispersion_alpha
+             1    ari_only                 const              7.829     2511.553        2455.920        2568.445              251055.250    0.000             0.012
+             1    ari_only           ari_current              0.095        1.100           1.069           1.131                   9.962    0.000             0.012
+             1    ari_only ari_recent_4week_mean             -0.029        0.971           0.945           0.999                  -2.855    0.042             0.012
+             1    ari_only            season_sin              0.012        1.012           0.988           1.038                   1.249    0.327             0.012
+             1    ari_only            season_cos              0.017        1.017           0.993           1.042                   1.712    0.165             0.012
+
+IRRs describe associations within the forecasting model and must not be interpreted as causal effects.
+
+================================================================================
+XGBOOST SHAP IMPORTANCE
+================================================================================
+ horizon_weeks    feature_set configuration                 feature  mean_abs_shap  mean_shap  median_abs_shap  shap_rank
+             2       ari_only             C             ari_current         86.661      3.182           94.517          1
+             2       ari_only             C              season_cos         53.552     -1.016           23.964          2
+             2       ari_only             C              season_sin         35.584     -0.889           39.554          3
+             2       ari_only             C   ari_recent_4week_mean         23.928     -0.825           20.905          4
+             4 ari_plus_covid             A              season_cos         79.298     -0.849           19.823          1
+             4 ari_plus_covid             A              season_sin         21.660     -0.087           13.086          2
+             4 ari_plus_covid             A   ari_recent_4week_mean          9.238     -0.100            6.256          3
+             4 ari_plus_covid             A             ari_current          0.000      0.000            0.000          4
+             4 ari_plus_covid             A              covid_lag1          0.000      0.000            0.000          5
+             4 ari_plus_covid             A covid_recent_4week_mean          0.000      0.000            0.000          6
+
+2-week model interpretation:
+- Rank 1: ari_current (mean |SHAP| = 86.661)
+- Rank 2: season_cos (mean |SHAP| = 53.552)
+- Rank 3: season_sin (mean |SHAP| = 35.584)
+- Rank 4: ari_recent_4week_mean (mean |SHAP| = 23.928)
+
+4-week model interpretation:
+- Rank 1: season_cos (mean |SHAP| = 79.298)
+- Rank 2: season_sin (mean |SHAP| = 21.660)
+- Rank 3: ari_recent_4week_mean (mean |SHAP| = 9.238)
+- Rank 4: ari_current (mean |SHAP| = 0.000)
+- Rank 5: covid_lag1 (mean |SHAP| = 0.000)
+- Rank 6: covid_recent_4week_mean (mean |SHAP| = 0.000)
+
+Important finding: although the ARI + COVID feature set was selected for the 4-week horizon, the COVID predictors had zero mean absolute SHAP importance in the frozen fitted model.
+The 4-week predictions were therefore driven primarily by seasonality and ARI-history predictors.
+
+================================================================================
+XGBOOST GAIN IMPORTANCE
+================================================================================
+ horizon_weeks    feature_set configuration                 feature       gain  normalized_gain  gain_rank
+             2       ari_only             C             ari_current 410724.156            0.456          1
+             2       ari_only             C              season_cos 231366.141            0.257          2
+             2       ari_only             C              season_sin 154982.188            0.172          3
+             2       ari_only             C   ari_recent_4week_mean 103839.328            0.115          4
+             4 ari_plus_covid             A              season_cos 714497.625            0.448          1
+             4 ari_plus_covid             A   ari_recent_4week_mean 453356.906            0.284          2
+             4 ari_plus_covid             A              season_sin 426324.438            0.267          3
+             4 ari_plus_covid             A             ari_current      0.000            0.000          4
+             4 ari_plus_covid             A              covid_lag1      0.000            0.000          5
+             4 ari_plus_covid             A covid_recent_4week_mean      0.000            0.000          6
+
+================================================================================
+CORE SCIENTIFIC CONCLUSIONS
+================================================================================
+1. Short-horizon ARI forecasting was most accurate.
+2. The 1-week Negative Binomial ARI-only model achieved the strongest final held-out performance.
+3. The 2-week selected model was an ARI-only XGBoost model.
+4. The 4-week validation-selected model used an ARI + COVID feature set.
+5. However, post-hoc SHAP interpretation indicated that the included COVID predictors contributed little or no importance to the final 4-week predictions.
+6. Longer forecast horizons showed reduced predictive skill.
+7. COVID censoring assumptions did not materially change the frozen-model results.
+
+================================================================================
+INTERPRETATION CAUTIONS
+================================================================================
+- Validation-selected feature sets should not automatically be interpreted as evidence that every included predictor contributed materially.
+- SHAP and gain importance describe predictive model behaviour, not causal effects.
+- Held-out 2026 performance must not be used for further model tuning or model re-selection.
+- Forecast skill decreased at longer horizons, and MASE exceeded 1 for the 2- and 4-week horizons.
