@@ -1,0 +1,4 @@
+horizon_weeks,model_family,feature_set,configuration,matched_test_rows,max_abs_prediction_difference,passed
+1,negative_binomial,ari_only,fixed_validation_specification,41,0.0,True
+2,xgboost,ari_only,C,41,0.0,True
+4,xgboost,ari_plus_covid,A,41,0.0,True

@@ -1,0 +1,11 @@
+horizon_weeks,feature_set,configuration,feature,gain,normalized_gain,gain_rank
+2,ari_only,C,ari_current,410724.15625,0.4558982916543788,1
+2,ari_only,C,season_cos,231366.140625,0.2568133056030942,2
+2,ari_only,C,season_sin,154982.1875,0.17202814454161683,3
+2,ari_only,C,ari_recent_4week_mean,103839.328125,0.11526025820091021,4
+4,ari_plus_covid,A,season_cos,714497.625,0.448191601448763,1
+4,ari_plus_covid,A,ari_recent_4week_mean,453356.90625,0.2843826917409896,2
+4,ari_plus_covid,A,season_sin,426324.4375,0.26742570681024735,3
+4,ari_plus_covid,A,ari_current,0.0,0.0,4
+4,ari_plus_covid,A,covid_lag1,0.0,0.0,5
+4,ari_plus_covid,A,covid_recent_4week_mean,0.0,0.0,6
